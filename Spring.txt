@@ -5,3 +5,10 @@ https://docs.spring.io/spring-framework/docs/current/reference/html/core.html (1
 https://docs.spring.io/spring-framework/docs/2.5.x/reference/aop.html (6.1, 6.1.1.)
 
 https://www.youtube.com/watch?v=j5JeFZLIa5o
+
+Generate Spring APplication
+  https://start.spring.io/
+  
+  https://docs.spring.io/spring-boot/docs/current/reference/html/application-properties.html#application-properties.json
+  
+  https://spring.io/guides#getting-started-guides
