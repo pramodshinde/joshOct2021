@@ -1,0 +1,12 @@
+https://www.geeksforgeeks.org/introduction-to-hibernate-framework/
+
+
+https://www.journaldev.com/7655/spring-orm-example-jpa-hibernate-transaction
+
+
+Tx Management - https://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cpn7/index.html
+
+Properties file to load database connection
+
+Connection properties
+https://www.baeldung.com/properties-with-spring
