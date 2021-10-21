@@ -1,0 +1,272 @@
+Lab 7 - import - Day1.demo6 project
+	1. Modify to connection AWS database but table name should be "name+empid"
+	2. Modify the project to communicate with hsqldb (local database)
+	3. Add one more method in DeptDAO
+		public void delete (String loc){
+		}
+Lab 6 - 
+	Db Setup => Download HSQLDB 2.6.0
+	extract and run (jdk/bin in path)
+		bin\runServer
+		bin\runManagerSwing
+		-> for version error -> ren lib\hsqldb8.jar -> hsqldb.jar 
+	
+	new maven project Day1.demo5
+	POM -> 	<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>5.2.17.RELEASE</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>5.2.17.RELEASE</version>
+		</dependency>
+		add external jar in classpath => hsqldb\lib\hsqldb.jar
+	
+	create demo.Dept.java
+	      package demo;
+
+	      public class Dept {
+		private int deptno;
+		private String dname;
+		private String loc;
+		
+		+ get/set + toString + constructors
+	
+	Create DeptDAO.java
+		package demo;
+
+		@Component(value = "deptdao")
+		public class DeptDAO {
+			@Autowired
+			private DataSource ds;
+			public void insert(Dept d) {
+				JdbcTemplate template = new JdbcTemplate(ds);
+				// create table dept  (deptno  integer  primary key, dname varchar(20), loc varchar(20))
+
+				String sql  = "insert into dept values (" + d.getDeptno() + ", '" + d.getDname() + "','" + d.getLoc() + "')";
+
+				System.out.println("in insert of DeptDAO with " + sql);
+				System.out.println(template);
+				template.execute(sql);
+			}
+		}
+	Create JdbcApplication.java
+		@Configuration
+		@ComponentScan(basePackages = "demo")
+		public class JDBCApplication {
+		@Bean
+		public DataSource ds() {
+			DriverManagerDataSource ds = new DriverManagerDataSource();
+			ds.setDriverClassName("org.hsqldb.jdbc.JDBCDriver");
+			ds.setUrl("jdbc:hsqldb:hsql://localhost/");
+			ds.setUsername("SA");
+			ds.setPassword(null);
+			return ds;
+
+		}
+	Write main method to test insert from DeptDAO
+	C - execute
+	R - Query -  list of records -> public List<Dept> read()
+	U - execute  public void update(int deptno, String newdname, String newloc)
+	D - execute  public void delete(int deptno)
+--------------------------
+Lab 5- Day1.demo4
+	Copy SQLConnection in demo1
+	Run -> error -> two beans satisfying the condition instead of 1
+	Add one more annoation to Connection in DeptDAO
+		@Autowired()
+		@Qualifier(value = "sql")
+		private Connection con;
+	Run -> check output, modify qualifer value to "ora" and check 
+
+	Add init-method with java 8 (compilation + runtime)
+		@PostConstruct
+		public void m1() {
+			System.out.println("in m1 of Deptdao " + con);
+		}
+	Run and check the value of con in constructor as well m1 method
+	
+-----------------
+Lab 4 - Day1.demo4
+    Create a package demo, demo1
+    demo.Simple
+        package demo;
+
+        public class Simple {
+
+          public Simple() {
+            System.out.println("Simple Constructor ");
+          }
+          public void m1() {
+            System.out.println("m1 invoked ...");
+          }
+        }
+   Application.java
+        @Configuration
+        public class Application {
+          @Bean()
+          @Scope(value = "prototype")
+          public Simple simple()
+          {
+            System.out.println("in getsimple of Application");
+            return new Simple();
+          }
+          public static void main(String[] args) {
+              ApplicationContext ctx = new AnnotationConfigApplicationContext(Application.class);
+              System.out.println("---------------------Context Loaded-----------------------");
+              String[] arr = ctx.getBeanDefinitionNames();
+              for (String string : arr) {
+                System.out.println(string);
+              }
+              System.out.println("-----------------------------");
+            Simple s1 = ctx.getBean("simple", Simple.class);
+              s1.m1();
+              Simple s2 = ctx.getBean("simple", Simple.class);
+              s2.m1();
+          }
+      }
+  RUn -> check beans which get created,  modify/playwith @bean, @Scope annoations for simple 
+  
+  Create Simple1.java
+       package demo;
+        @Component
+        public class Simple1 {
+
+          public Simple1() {
+            System.out.println("Simple1 Constructor ");
+          }
+          public void m1() {
+            System.out.println("m1 invoked of Simple1 ...");
+          }
+        }
+  Modify application.java to include
+      Simple1 s11 = ctx.getBean("simple1", Simple1.class);
+			s11.m1();  
+  run -> error
+  Add componentscan annoation to application.java
+  
+  Create demo1 package with Connection, OracleConnection with @component
+  
+  Create DeptDAO
+      package demo1;
+
+      @Component(value="deptdao")
+      public class DeptDAO {
+        @Autowired
+        private Connection con;
+
+        public void insert() {
+          getCon().open();
+          System.out.println("in insert of DeptDAO");
+          getCon().close();
+        }
+
+        public Connection getCon() {
+          return con;
+        }
+
+        public void setCon(Connection con) {
+          this.con = con;
+        }
+      }
+
+ Modify application to getDeptdao bean and invoke insert method
+ delete autowired annoation and check errors 
+ 
+--------------------
+Lab 3 - Annoatation based
+  copy day1.demo2 to day1.demo3
+   delete demo1.xml and modify
+   Application.java to 
+    @ComponentScan(basePackages = "demo")
+    @Configuration
+    public class Application {
+
+      public static void main(String[] args) {
+        // TODO Auto-generated method stub
+      //	ApplicationContext ctx = new ClassPathXmlApplicationContext("demo1.xml");
+        ApplicationContext ctx = new AnnotationConfigApplicationContext(Application.class);
+
+  Run test
+  
+  Create interface Connection -> void open, void close
+  Create two classes OracleImpl and SQLImpl to implement Connection interface
+  Create instance of OracleImpl / SQLImpl using getbean and run open and close methods
+--------------------
+Lab 2 - XML + Annotations
+  copy of same earlier project as Day1.demo2
+    1. Change demo1.xml
+      <?xml version="1.0" encoding="UTF-8"?>
+      <beans xmlns="http://www.springframework.org/schema/beans"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns:context="http://www.springframework.org/schema/context"
+          xsi:schemaLocation="http://www.springframework.org/schema/beans
+              https://www.springframework.org/schema/beans/spring-beans.xsd
+              http://www.springframework.org/schema/context
+              https://www.springframework.org/schema/context/spring-context.xsd">
+
+              <context:component-scan base-package="demo"></context:component-scan>
+      </beans>
+ 2. Modify Simple.java
+  @Component
+  //@Scope(value = "singleton")
+  @Scope(value = "prototype")
+  public class Simple {
+
+Test application using sinleton / prototype
+
+-----------------------
+Lab 1 - XML Based (Day1.demo1)
+  Create a new maven project
+  Modify pom file to include 
+    	<dependencies>
+      <!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>5.2.17.RELEASE</version>
+      </dependency>
+    </dependencies>
+Create demo1.xml in resouces folder
+  <?xml version="1.0" encoding="UTF-8"?>
+  <beans xmlns="http://www.springframework.org/schema/beans"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.springframework.org/schema/beans
+          https://www.springframework.org/schema/beans/spring-beans.xsd">
+    <bean id="simple" class="demo.Simple" />
+  </beans>
+Create Simple.java
+  package demo;
+
+  public class Simple {
+
+    public Simple() {
+      System.out.println("Simple Constructor ");
+    }
+    public void m1() {
+      System.out.println("m1 invoked ...");
+    }
+  }
+Create Application.java
+  package demo;
+  public class Application {
+
+    public static void main(String[] args) {
+      // TODO Auto-generated method stub
+      ApplicationContext ctx = new ClassPathXmlApplicationContext("demo1.xml");
+      System.out.println("----------------Context Loaded---------------------");
+      //Simple s1 =new Simple();
+      Simple s1 = ctx.getBean("simple",Simple.class);
+      s1.m1();
+    }
+
+  }
+
+Run -> Application
+    Observe where simple constructor is invoked,
+    create multiple instances of Simple and invoke m1 method and check only single instance of Simple is created
+    
+   
